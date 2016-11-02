@@ -8,6 +8,8 @@ Server class that creates a threaded server.
 from ThreadingClass import ClientThread
 import socket
 import thread
+import sys
+import logging
 
 SERVER_IP = '0.0.0.0'
 SERVER_PORT = 12345
@@ -16,16 +18,16 @@ SERVER_PORT = 12345
 class Server():
 
     # Initializes a new server
-    def __init__(self):
-        self.ip = SERVER_IP
-        self.port = SERVER_PORT
+    def __init__(self, passedPort=12345, passedIP='0.0.0.0'):
+        self.ip = passedIP
+        self.port = passedPort
         self.s = socket.socket()
 
     # Runs the server forever until keyboard interrupt.
     def run(self):
         self.s.bind((SERVER_IP, SERVER_PORT))
         threads = []
-        print "Server listening at " + self.ip + ":" + str(self.port)
+        logging.info("Listening at " + self.ip + ":" + str(self.port))
         try:
             while True:
                 self.s.listen(5)
@@ -35,9 +37,21 @@ class Server():
                 threads.append(newthread)
             for t in threads:
                 t.join()
-        except KeyboardInterrupt:
-            print "\nKeyboard Interrupt Recieved. Shutting Down."
+        except:
+            self.s.close()
+            e = sys.exc_info()[0]
+            logging.info(str(e))
+            logging.info("Stopping server!")
+            return
 
 if __name__ == "__main__":
-    MobileProofServer = Server()
-    MobileProofServer.run()
+    logging.basicConfig(filename="mobileproof.log", level=logging.INFO)
+    try:
+        logging.info('Started.')
+        MobileProofServer = Server()
+        MobileProofServer.run()
+    except:
+        e = sys.exc_info()[0]
+        logging.info(str(e))
+        logging.info("Stopping server.")
+        sys.exit()

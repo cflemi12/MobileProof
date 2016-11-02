@@ -8,6 +8,7 @@ A threaded client class for MobileProof application.
 import socket
 from threading import Thread
 from Request import do_request
+import logging
 
 # Multithreaded Python socket server. 
 class ClientThread(Thread):
@@ -18,16 +19,16 @@ class ClientThread(Thread):
         self.clientsock = sock 
         self.ip = addr[0]
         self.port = addr[1]
-        print "New socket thread for " + self.ip + ":" + str(self.port)
+        logging.info("New socket thread for "+self.ip+":"+str(self.port))
 
     # The request handler for each threaded client
     def run(self):
         try:
             data = self.clientsock.recv(1024)
-            print data.strip()
+            logging.info("Request recieved: "+ data.strip())
             resp = do_request(data)
             self.clientsock.send(resp+'\n')
             self.clientsock.close()
         except IOError as e:
             if e.errno == errno.EPIPE:
-                print "Borken Pipe. Client closed connection."
+                logging.info("Borken Pipe. Client closed connection.")
